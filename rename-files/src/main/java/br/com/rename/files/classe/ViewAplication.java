@@ -1,21 +1,25 @@
 package br.com.rename.files.classe;
 
+import java.awt.Dialog.ModalExclusionType;
 import java.awt.EventQueue;
-
-import javax.swing.JFrame;
-import java.awt.GridBagLayout;
-import javax.swing.JLabel;
-import java.awt.GridBagConstraints;
-import javax.swing.JTextField;
-import java.awt.Insets;
-import javax.swing.JButton;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.awt.event.ActionEvent;
+
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JProgressBar;
+import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
 
 public class ViewAplication {
 
-	private JFrame frame;
+	private JFrame frmRenomeadorDeArquivos;
 	private JTextField textField;
 
 	/**
@@ -26,7 +30,7 @@ public class ViewAplication {
 			public void run() {
 				try {
 					ViewAplication window = new ViewAplication();
-					window.frame.setVisible(true);
+					window.frmRenomeadorDeArquivos.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -45,51 +49,94 @@ public class ViewAplication {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		frame = new JFrame();
-		frame.setBounds(100, 100, 450, 300);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0};
-		gridBagLayout.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
-		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-		frame.getContentPane().setLayout(gridBagLayout);
-		
-		JLabel lblDigiteOCaminho = new JLabel("Digite o caminho da pasta");
-		GridBagConstraints gbc_lblDigiteOCaminho = new GridBagConstraints();
-		gbc_lblDigiteOCaminho.insets = new Insets(0, 0, 5, 5);
-		gbc_lblDigiteOCaminho.gridx = 1;
-		gbc_lblDigiteOCaminho.gridy = 1;
-		frame.getContentPane().add(lblDigiteOCaminho, gbc_lblDigiteOCaminho);
+		frmRenomeadorDeArquivos = new JFrame();
+		frmRenomeadorDeArquivos.getContentPane().setFont(new Font("Constantia", Font.PLAIN, 11));
+		frmRenomeadorDeArquivos.setTitle("Renomeador de Arquivos");
+		frmRenomeadorDeArquivos.setModalExclusionType(ModalExclusionType.APPLICATION_EXCLUDE);
+		frmRenomeadorDeArquivos.setBounds(100, 100, 460, 235);
+		frmRenomeadorDeArquivos.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		JButton btnNewButton = new JButton("Iniciar");
+		
+		JLabel lblDigiteOCaminho = new JLabel("Digite o caminho da pasta");
+		JLabel lblCarregando = new JLabel("");
+		
+		textField = new JTextField();
+		textField.setColumns(10);
+		
+		JProgressBar progressBar = new JProgressBar();
+		progressBar.setStringPainted(true);
+		
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				RenameService service = new RenameService();
 				String caminho = textField.getText();
-				try {
-					service.renameFiles(caminho + "\\");
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+				if(!caminho.isEmpty()) {
+					new Thread() {
+						public void run() {
+							for(int i = 0;i < 101 ; i++) {
+								try {
+									sleep(100);
+									progressBar.setValue(i);
+									if(progressBar.getValue() == 1) {
+										lblCarregando.setText("Renomeando Arquivos...");
+									}
+								}catch (InterruptedException e) {
+									// TODO: handle exception
+								}
+							}
+						}
+					}.start();	
+					try {
+						service.renameFiles(caminho + "\\");
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}else {
+					JOptionPane.showMessageDialog(null,"O caminho da Pasta deve ser Preenchido.");
 				}
 			}
 		});
-		
-		textField = new JTextField();
-		GridBagConstraints gbc_textField = new GridBagConstraints();
-		gbc_textField.gridwidth = 7;
-		gbc_textField.insets = new Insets(0, 0, 5, 5);
-		gbc_textField.fill = GridBagConstraints.HORIZONTAL;
-		gbc_textField.gridx = 1;
-		gbc_textField.gridy = 2;
-		frame.getContentPane().add(textField, gbc_textField);
-		textField.setColumns(10);
-		GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
-		gbc_btnNewButton.insets = new Insets(0, 0, 5, 0);
-		gbc_btnNewButton.gridx = 9;
-		gbc_btnNewButton.gridy = 2;
-		frame.getContentPane().add(btnNewButton, gbc_btnNewButton);
-	}
 
+		GroupLayout groupLayout = new GroupLayout(frmRenomeadorDeArquivos.getContentPane());
+		groupLayout.setHorizontalGroup(
+			groupLayout.createParallelGroup(Alignment.TRAILING)
+				.addGroup(groupLayout.createSequentialGroup()
+					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+						.addGroup(groupLayout.createSequentialGroup()
+							.addGap(143)
+							.addComponent(lblCarregando)
+							.addGap(281))
+						.addGroup(groupLayout.createSequentialGroup()
+							.addContainerGap()
+							.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+								.addComponent(progressBar, GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE)
+								.addGroup(groupLayout.createSequentialGroup()
+									.addComponent(textField, GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addComponent(btnNewButton))))
+						.addGroup(groupLayout.createSequentialGroup()
+							.addContainerGap()
+							.addComponent(lblDigiteOCaminho, GroupLayout.PREFERRED_SIZE, 159, GroupLayout.PREFERRED_SIZE)))
+					.addContainerGap())
+		);
+		groupLayout.setVerticalGroup(
+			groupLayout.createParallelGroup(Alignment.LEADING)
+				.addGroup(groupLayout.createSequentialGroup()
+					.addGap(22)
+					.addComponent(lblDigiteOCaminho, GroupLayout.PREFERRED_SIZE, 35, GroupLayout.PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(textField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(btnNewButton))
+					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addComponent(progressBar, GroupLayout.PREFERRED_SIZE, 23, GroupLayout.PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(lblCarregando)
+					.addContainerGap(391, Short.MAX_VALUE))
+		);
+		frmRenomeadorDeArquivos.getContentPane().setLayout(groupLayout);
+		
+	}
 }
